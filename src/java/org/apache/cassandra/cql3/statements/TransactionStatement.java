@@ -387,7 +387,14 @@ public class TransactionStatement implements CQLStatement.CompositeCQLStatement,
                 @SuppressWarnings("unchecked")
                 SinglePartitionReadQuery.Group<SinglePartitionReadCommand> selectQuery = (SinglePartitionReadQuery.Group<SinglePartitionReadCommand>) returningSelect.select.getQuery(options, 0);
                 Selection.Selectors selectors = returningSelect.select.getSelection().newSelectors(options);
-                ResultSetBuilder result = new ResultSetBuilder(resultMetadata, selectors, false);
+
+                ResultSetBuilder result;
+                if (returningSelect.select.getAggregationSpec(options) != null) {
+                    result = new ResultSetBuilder(resultMetadata, selectors, false, returningSelect.select.getAggregationSpec(options).newGroupMaker());
+                } else {
+                    result = new ResultSetBuilder(resultMetadata, selectors, false);
+                }
+
                 if (selectQuery.queries.size() == 1)
                 {
                     FilteredPartition partition = data.get(TxnDataName.returning());
